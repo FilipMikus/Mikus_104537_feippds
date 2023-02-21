@@ -7,4 +7,8 @@
 [![code style: PEP257](https://img.shields.io/badge/code%20style-PEP%20257-yellow.svg)](https://peps.python.org/pep-0257/)
 [![license: MIT](https://img.shields.io/badge/license-MIT-red.svg)](https://opensource.org/licenses/MIT)
 
+Repozitár predmetu Paralelné programovanie a distribuované systémy (I-PPDS) na Fakulte elektrotechniky a informatiky Slovenskej technickej univerzity v Bratislave (FEI STU).
+
+## 
+
 Repository for study course Parallel Programming and Distributed Systems (I-PPDS) at Faculty of Electrical Engineering and Information Technology of Slovak University of Technology in Bratislava (FEI STU).
