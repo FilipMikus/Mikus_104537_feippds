@@ -1,3 +1,6 @@
+from time import sleep
+from fei.ppds import Thread
+
 """
 Modul obsahujúci implementáciu Bakery algorytmu.
 """
@@ -6,12 +9,10 @@ __author__ = "Filip Mikuš"
 __email__ = "xmikusf@stuba.sk"
 __license__ = "MIT"
 
-from fei.ppds import Thread
-from time import sleep
+PROCES_POCET = 11
+tiket = [0 for i in range(PROCES_POCET)]
+vyber_tiket = [False for j in range(PROCES_POCET)]
 
-PROCES_POCET: int = 11
-tiket: list = [0 for i in range(PROCES_POCET)]
-vyber_tiket: list = [False for j in range(PROCES_POCET)]
 
 def bakery_proces(proces_id: int):
     """
@@ -20,9 +21,10 @@ def bakery_proces(proces_id: int):
         Argumenty:
             proces_id: Identifikátor procesu.
     """
+
     global PROCES_POCET, tiket, vyber_tiket
 
-    i: int = proces_id
+    i = proces_id
     vyber_tiket[i] = True
     tiket[i] = 1 + max(tiket)
     vyber_tiket[i] = False
@@ -32,7 +34,8 @@ def bakery_proces(proces_id: int):
         while vyber_tiket[j]:
             continue
 
-        while tiket[j] != 0 and (tiket[j] < tiket[i] or (tiket[j] == tiket[i] and j < i)):
+        while tiket[j] != 0 and \
+                (tiket[j] < tiket[i] or (tiket[j] == tiket[i] and j < i)):
             continue
 
     print(f"Proces [id: {proces_id}] vykonáva kritickú oblasť.")
