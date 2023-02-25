@@ -1,5 +1,5 @@
 """
-Tento modul obsahuje implementáciu Bakery algorytmu.
+Modul obsahujúci implementáciu Bakery algorytmu.
 """
 
 __author__ = "Filip Mikuš"
