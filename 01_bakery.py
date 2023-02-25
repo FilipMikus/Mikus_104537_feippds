@@ -6,6 +6,8 @@ __author__ = "Filip Mikuš"
 __email__ = "xmikusf@stuba.sk"
 __license__ = "MIT"
 
+from time import sleep
+
 PROCES_POCET: int = 11
 tiket: list = [0 for i in range(PROCES_POCET)]
 vyber_tiket: list = [False for j in range(PROCES_POCET)]
@@ -26,3 +28,8 @@ def bakery_proces(proces_id: int):
 
         while tiket[j] != 0 and (tiket[j] < tiket[i] or (tiket[j] == tiket[i] and j < i)):
             continue
+
+    print(f"Proces [id: {proces_id}] vykonáva kritickú oblasť.")
+    sleep(3)
+
+    tiket[i] = 0
