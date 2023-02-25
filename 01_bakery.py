@@ -14,7 +14,12 @@ tiket: list = [0 for i in range(PROCES_POCET)]
 vyber_tiket: list = [False for j in range(PROCES_POCET)]
 
 def bakery_proces(proces_id: int):
+    """
+        Funkcia simulujúca proces.
 
+        Argumenty:
+            proces_id: Identifikátor procesu.
+    """
     global PROCES_POCET, tiket, vyber_tiket
 
     i: int = proces_id
