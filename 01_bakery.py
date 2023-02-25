@@ -9,3 +9,12 @@ __license__ = "MIT"
 PROCES_POCET: int = 11
 tiket: list = [0 for i in range(PROCES_POCET)]
 vyber_tiket: list = [False for j in range(PROCES_POCET)]
+
+def bakery_proces(proces_id: int):
+
+    global PROCES_POCET, tiket, vyber_tiket
+
+    i: int = proces_id
+    vyber_tiket[i] = True
+    tiket[i] = 1 + max(tiket)
+    vyber_tiket[i] = False
