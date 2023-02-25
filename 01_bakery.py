@@ -6,6 +6,7 @@ __author__ = "Filip Mikuš"
 __email__ = "xmikusf@stuba.sk"
 __license__ = "MIT"
 
+from fei.ppds import Thread
 from time import sleep
 
 PROCES_POCET: int = 11
@@ -33,3 +34,8 @@ def bakery_proces(proces_id: int):
     sleep(3)
 
     tiket[i] = 0
+
+
+if __name__ == '__main__':
+    procesy = [Thread(bakery_proces, i) for i in range(PROCES_POCET)]
+    [proces.join() for proces in procesy]
