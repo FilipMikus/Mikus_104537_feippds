@@ -18,3 +18,11 @@ def bakery_proces(proces_id: int):
     vyber_tiket[i] = True
     tiket[i] = 1 + max(tiket)
     vyber_tiket[i] = False
+
+    for j in range(PROCES_POCET):
+
+        while vyber_tiket[j]:
+            continue
+
+        while tiket[j] != 0 and (tiket[j] < tiket[i] or (tiket[j] == tiket[i] and j < i)):
+            continue
