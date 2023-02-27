@@ -16,10 +16,10 @@ vyber_tiket = [False for j in range(PROCES_POCET)]
 
 def bakery_proces(proces_id: int):
     """
-        Funkcia simulujúca proces.
+    Funkcia simulujúca proces.
 
-        Argumenty:
-            proces_id: Identifikátor procesu.
+    Argumenty:
+        proces_id: Identifikátor procesu.
     """
 
     global PROCES_POCET, tiket, vyber_tiket
