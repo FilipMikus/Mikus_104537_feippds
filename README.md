@@ -40,9 +40,15 @@ kým nepríde na rad ich tiket.
 
 ### Vzájomné vylúčenie
 
-Princíp vzájomného výlúčenia je dodržaný práve vďaka tiketom, kde je do kritickej oblasti pripustený vždy práve jeden proces,
-a to ten, ktorý vlastní tiket s najnižšou hodnotou, respektívne pri rovnosti hodnôt viacerých tiketov ten s nižším identifátorom. 
-Hodnota tiketu je následne po vykonaní kritikcej oblasti vynulovaná.
+1. V kritickej oblasti sa smie vykonávať v každom čase najviac jeden proces.
+2. Proces, ktorý sa vykonáva mimo kritickej oblasti nesmie brániť iným vstúpiť do nej.
+3. Rozhodnutie o vstupe musí prísť v konečnom čase.
+4. Procesy nemôžu pri vstupe do kritickej oblasti predpokladať nič o vzájomnom časovaní (plánovaní).
+
+Princíp vzájomného výlúčenia a všetky jeho nutné podmienky sú dodržané práve vďaka tiketom, kde je do kritickej oblasti 
+pripustený vždy práve jeden proces (1.), a to ten, ktorý vlastní tiket s najnižšou hodnotou, respektívne pri rovnosti 
+hodnôt viacerých tiketov ten s nižším identifátorom (2., 4.), rozhodnutie sa vykoná v konečnom čase (3.).
+Hodnota tiketu je následne po vykonaní kritikcej oblasti vynulovaná (2., 4.).
 
 ### Implementácia
 
