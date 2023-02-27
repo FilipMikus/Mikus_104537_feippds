@@ -47,9 +47,10 @@ kým nepríde na rad ich tiket.
 
 Princíp vzájomného výlúčenia a všetky jeho nutné podmienky sú dodržané práve vďaka tiketom, kde je do kritickej oblasti 
 pripustený vždy práve jeden proces, a to ten, ktorý vlastní tiket s najnižšou hodnotou, respektívne pri rovnosti 
-hodnôt viacerých tiketov ten s nižším identifátorom, rozhodnutie sa vykoná v konečnom čase. Tikety sú 
+hodnôt viacerých tiketov ten s nižším identifátorom (1., 2., 3.), rozhodnutie sa vykoná v konečnom čase (3.). Tikety sú 
 pridelované s jedinečnou hodnotou (respektívne pri rovnosti zabezpečuje jedinečnosť index (alebo identifikátor) procesu), 
-čo zaručuje jasné poradie vykonávania (FIFO) procesov. Hodnota tiketu je následne po vykonaní kritikcej oblasti vynulovaná.
+čo zaručuje jasné poradie vykonávania (FIFO) procesov (4.). Hodnota tiketu je následne po vykonaní kritikcej oblasti 
+vynulovaná (2.).
 
 ### Implementácia
 
