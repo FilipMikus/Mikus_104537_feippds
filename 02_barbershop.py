@@ -107,3 +107,17 @@ def zakaznik_proces(proces_id: int, barbershop: Barbershop):
             barbershop.mutex.unlock()
 
             rast_vlasov(proces_id)
+
+
+def barber_proces(proces_id: int, barbershop: Barbershop):
+
+    while True:
+        # signalizácia (rendezvous 1), že barbér je pripravený na strihanie
+        barbershop.barber_pripraveny.signal()
+        # čakanie (rendezvous 1) na zákazníka pripraveného na ostrihanie
+        barbershop.zakaznik_pripraveny.wait()
+        strihanie_vlasov_barberom(proces_id)
+        # signalizácia (rendezvous 2), že barbér dokončil strih
+        barbershop.barber_koniec_obsluhy.signal()
+        # čakanie (rendezvous 2) na ostrihanie zákazníka
+        barbershop.zakaznik_koniec_obsluhy.wait()
