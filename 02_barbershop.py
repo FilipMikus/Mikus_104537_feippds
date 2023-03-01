@@ -17,8 +17,22 @@ CAKAREN_MAX_KAPACITA: int = 3
 
 
 class Barbershop(object):
+    """
+    Trieda reprezentujúca Barbershop a jeho zdieľané premenné.
+
+    Atribúty:
+        mutex: Mutex na manipuláciu s premennou cakaren.
+        cakaren: Premenná reprezentujúca počet zákazníkov v čakárni (barbershope).
+        zakaznik_pripraveny: Semafór (Rendezvous 1) zákazníka na synchronizáciu pred strihaním.
+        barber_pripraveny: Semafór (Rendezvous 1) barbéra na synchronizáciu pred strihaním.
+        zakaznik_koniec_obsluhy: Semafór (Rendezvous 2) zákazníka na synchronizáciu po strihaní.
+        barber_koniec_obsluhy: Semafór (Rendezvous 2) barbéra na synchronizáciu po strihaní.
+    """
 
     def __init__(self):
+        """
+        Metóda na inicializáciu objektu Barbershop a jeho zdieľaných premenných.
+        """
 
         self.mutex: Mutex = Mutex()
         self.cakaren: int = 0
@@ -31,34 +45,70 @@ class Barbershop(object):
 
 
 def strihanie_vlasov_zakaznika(proces_id: int):
+    """
+    Funkcia reprezentujúca strihanie vlasov zákazníka.
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+    """
 
     print(f"Zákazník [id: {proces_id}] využíva služby barbéra.")
     sleep(3)
 
 
 def strihanie_vlasov_barberom(proces_id: int):
+    """
+    Funkcia reprezentujúca strihanie vlasov barbérom.
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+    """
 
     print(f"Barbér [id: {proces_id}] poskytuje svoje služby.")
     sleep(3)
 
 
 def cakaren_prichod(proces_id: int):
+    """
+    Funkcia reprezentujúca príchod zákazníka do čakárne (barbershopu).
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+    """
 
     print(f"Zákazník [id: {proces_id}] vchádza do barbershopu.")
 
 
 def cakaren_odchod(proces_id: int):
+    """
+    Funkcia reprezentujúca odchod zákazníka z čakárne (barbershopu).
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+    """
 
     print(f"Zákazník [id: {proces_id}] odchádza z barbershopu.")
 
 
 def plna_cakaren_odchod(proces_id: int):
+    """
+    Funkcia reprezentujúca odchod zákazníka z čakárne (barbershopu) pri jej plnej kapacite a uspanie.
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+    """
 
     print(f"Čakáreň je plná, zákazník [id: {proces_id}] odchádza z barbershopu.")
     sleep(5)
 
 
 def rast_vlasov(proces_id: int):
+    """
+    Funkcia reprezentujúca rast vlasov zákazníka.
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+    """
 
     print(f"Zákazníkovi [id: {proces_id}] rastú vlasy.")
     sleep(5)
@@ -110,6 +160,13 @@ def zakaznik_proces(proces_id: int, barbershop: Barbershop):
 
 
 def barber_proces(proces_id: int, barbershop: Barbershop):
+    """
+    Funkcia simulujúca proces reprezentujúci barbéra.
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+        barbershop: barbershop: Barbershop objekt obsahujúci zdieľané premenné.
+    """
 
     while True:
         # signalizácia (rendezvous 1), že barbér je pripravený na strihanie
@@ -124,6 +181,9 @@ def barber_proces(proces_id: int, barbershop: Barbershop):
 
 
 def main():
+    """
+    Funkcia vykonávajúca všeobecnú funkcionalitu.
+    """
 
     barbershop: Barbershop = Barbershop()
     zakaznici: list = []
