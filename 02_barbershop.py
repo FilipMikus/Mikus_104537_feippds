@@ -8,7 +8,7 @@ __email__ = "xmikusf@stuba.sk, mariansebena@stuba.sk, xvavro@stuba.sk"
 __license__ = "MIT"
 
 
-from fei.ppds import Mutex, Semaphore, print
+from fei.ppds import Mutex, Semaphore, Thread, print
 from time import sleep
 
 
@@ -121,3 +121,20 @@ def barber_proces(proces_id: int, barbershop: Barbershop):
         barbershop.barber_koniec_obsluhy.signal()
         # čakanie (rendezvous 2) na ostrihanie zákazníka
         barbershop.zakaznik_koniec_obsluhy.wait()
+
+
+def main():
+
+    barbershop: Barbershop = Barbershop()
+    zakaznici: list = []
+
+    for i in range(ZAKAZNIK_POCET):
+        zakaznici.append(Thread(zakaznik_proces, i, barbershop))
+    barber: Thread = Thread(barber_proces, 0, barbershop)
+
+    for vlakno in zakaznici + [barber]:
+        vlakno.join()
+
+
+if __name__ == "__main__":
+    main()
