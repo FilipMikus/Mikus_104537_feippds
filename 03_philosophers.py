@@ -13,3 +13,10 @@ from time import sleep
 
 
 FILOZOF_POCET: int = 5
+
+
+class Jedalen:
+
+    def __init__(self):
+
+        self.vidlicky: list[Mutex] = [Mutex() for _ in range(FILOZOF_POCET)]
