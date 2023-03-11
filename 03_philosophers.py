@@ -52,3 +52,19 @@ def filozof_proces(proces_id: int, jedalen: Jedalen):
 
         jedalen.vidlicky[(proces_id + 1) % FILOZOF_POCET].unlock()
         jedalen.vidlicky[proces_id].unlock()
+
+
+def main():
+
+    jedalen: Jedalen = Jedalen()
+    filozofi: list[Thread] = []
+
+    for i in range(FILOZOF_POCET):
+        filozofi.append(Thread(filozof_proces, i, jedalen))
+
+    for filozof in filozofi:
+        filozof.join()
+
+
+if __name__ == "__main__":
+    main()
