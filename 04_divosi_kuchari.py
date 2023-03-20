@@ -1,3 +1,13 @@
+"""
+Modul obsahujúci implementáciu hodujúcich divochov s viacerými kuchármi.
+"""
+
+
+__authors__ = "Filip Mikuš, Marián Šebeňa, Tomáš Vavro"
+__email__ = "xmikusf@stuba.sk, mariansebena@stuba.sk, xvavro@stuba.sk"
+__license__ = "MIT"
+
+
 from fei.ppds import Event, Semaphore, Mutex, Thread, print
 from time import sleep
 from simplebarrier import SimpleBarrier
@@ -9,8 +19,23 @@ KUCHAR_POCET = 5
 
 
 class Usadlost:
+    """
+    Trieda reprezentujúca Usadlost a jeho zdieľané premenné.
+
+    Atribúty:
+        divoch_mutex: Mutex na manipuláciu divochom s premennou porcie.
+        kuchar_mutex: Mutex na manipuláciu kuchárom s premennou porcie.
+        porcie: Premenná reprezentujúca počet porcií v hrnci.
+        plny_hrniec: Signalizačný Semafór plného hrnca.
+        prazdny_hrniec: Signalizačný Semafór prázdneho hrnca.
+        divoch_bariera_1: Bariéra (1.) synchronizujúca spoločné hodovanie divochov.
+        divoch_bariera_2: Bariéra (2.) synchronizujúca spoločné hodovanie divochov.
+    """
 
     def __init__(self):
+        """
+        Metóda na inicializáciu objektu Usadlost a jeho zdieľaných premenných.
+        """
 
         self.divoch_mutex = Mutex()
         self.kuchar_mutex = Mutex()
@@ -22,33 +47,70 @@ class Usadlost:
 
 
 def hodovanie(proces_id: int):
+    """
+    Funkcia reprezentujúca hodovanie divocha.
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+    """
 
     print(f"Divoch [id: {proces_id}] hoduje.")
     sleep(3)
 
 
 def varenie(proces_id: int):
+    """
+    Funkcia reprezentujúca varenie kuchára.
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+    """
 
     print(f"Kuchár [id: {proces_id}] varí.")
     sleep(5)
 
 
 def nabratie_porcia(proces_id: int):
+    """
+    Funkcia reprezentujúca nabratie porcie divochom.
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+    """
 
     print(f"Divoch [id: {proces_id}] si naberá porciu.")
 
 
 def najdenie_prazdny_hrniec(proces_id: int):
+    """
+    Funkcia reprezentujúca nájdenie prázdneho hrnca divochom.
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+    """
 
     print(f"Divoch [id: {proces_id}] našiel prázdny hrniec a upovedumuje kuchárov.")
 
 
 def servirovanie_plny_hrniec(proces_id: int):
+    """
+    Funkcia reprezentujúca servírovanie plného hrnca kuchárom.
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+    """
 
     print(f"Kuchár [id: {proces_id}] upovedomuje divochov o naplnení hrnca.")
 
 
 def divoch_proces(proces_id: int, usadlost: Usadlost):
+    """
+    Funkcia simulujúca proces reprezentujúci divocha.
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+        usadlost: Usadlost objekt obsahujúci zdieľané premenné.
+    """
 
     while True:
         usadlost.divoch_bariera_1.wait()
@@ -67,6 +129,13 @@ def divoch_proces(proces_id: int, usadlost: Usadlost):
 
 
 def kuchar_proces(proces_id: int, usadlost: Usadlost):
+    """
+    Funkcia simulujúca proces reprezentujúci kuchára.
+
+    Argumenty:
+        proces_id: Identifikátor procesu.
+        usadlost: Usadlost objekt obsahujúci zdieľané premenné.
+     """
 
     while True:
         usadlost.prazdny_hrniec.wait()
@@ -85,6 +154,9 @@ def kuchar_proces(proces_id: int, usadlost: Usadlost):
 
 
 def main():
+    """
+    Funkcia vykonávajúca všeobecnú funkcionalitu.
+    """
 
     usadlost: Usadlost = Usadlost()
     divosi: list = []
