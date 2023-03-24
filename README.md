@@ -50,6 +50,7 @@ _prazdny_hrniec_ - Event) a **Bariéra** (_divoch_bariera_1_ - SimpleBarrier, _d
             self.divoch_mutex = Mutex()
             self.kuchar_mutex = Mutex()
             self.porcie = 0
+            self.varenie_dokoncene = False
             self.plny_hrniec = Semaphore(0)
             self.prazdny_hrniec = Event()
             self.divoch_bariera_1 = SimpleBarrier(DIVOCH_POCET)
@@ -81,16 +82,23 @@ porušenie integrity počítadla.
     def divoch_proces(proces_id: int, usadlost: Usadlost):
         while True:
             usadlost.divoch_bariera_1.wait()
-            usadlost.divoch_bariera_2.wait()
+            usadlost.divoch_bariera_2.wait_vypis(
+                f"Divoch [id: {proces_id}] čaká na stretnutie pred hodovaním.",
+                f"Divosi sa stretli, môžu začať hodovať."
+            )
             usadlost.divoch_mutex.lock()
 
 Následne prebehne samotná kontrola počtu porcii v hrnci (_porcie == 0_), pričom ak je hrniec prázdny 
-prebehne simulácia nájdenia prázdneho hrnca divochom (_najdenie_prazdny_hrniec()_), potom je pomocou semafóru kuchárom
-signalizované, že je hrniec prázdny (_prazdny_hrniec.signal()_) a napokon následuje čakanie na signalizáciu, že je hrniec 
-naplnený kuchármi (_plny_hrniec.wait()_).
+prebehne simulácia nájdenia prázdneho hrnca divochom (_najdenie_prazdny_hrniec()_), reset indikátora procesu varenia
+(_varenie_dokoncene = False_) chráneného mutex-om (_kuchar_mutex.lock()_, _kuchar_mutex.unlock()_), potom je pomocou 
+semafóru kuchárom signalizované, že je hrniec prázdny (_prazdny_hrniec.signal()_) a napokon následuje čakanie na 
+signalizáciu, že je hrniec naplnený kuchármi (_plny_hrniec.wait()_).
 
             if usadlost.porcie == 0:
                 najdenie_prazdny_hrniec(proces_id)
+                usadlost.kuchar_mutex.lock()
+                usadlost.varenie_dokoncene = False
+                usadlost.kuchar_mutex.unlock()
                 usadlost.prazdny_hrniec.signal()
                 usadlost.plny_hrniec.wait()
 
@@ -113,46 +121,66 @@ porušenie integrity.
             usadlost.prazdny_hrniec.wait()
             usadlost.kuchar_mutex.lock()
 
+Najprv prebehne kontrola indikátora procesu varenia (_if not usadlost.varenie_dokoncene_). Ak proces nie je dokončený, 
+proces pokračuje ďalej, ak je dokončený, príde len k odomknutiu mutex-u (_kuchar_mutex.unlock()_) bez dodatočnej aktivity.
+
+            if not usadlost.varenie_dokoncene:
+                ...
+            else:
+                usadlost.kuchar_mutex.unlock()
+
 Následne prebehne samotná kontrola počtu porcii v hrnci (_porcie < PORCIA_POCET_), pričom ak v hrncii nie je dostatočný
 počet porcii príde k inkrementovaniu počítadla porcii (_.porcie += 1_), odomknutiu mutex-u (_kuchar_mutex.unlock()_) 
 a nakoniec simulácia samotného varenia kuchára (_varenie()_).
 
-            if usadlost.porcie < PORCIA_POCET:
-                usadlost.porcie += 1
-                usadlost.kuchar_mutex.unlock()
-                varenie(proces_id)
+                if usadlost.porcie < PORCIA_POCET:
+                    usadlost.porcie += 1
+                    usadlost.kuchar_mutex.unlock()
+                    varenie(proces_id)
 
-Ak je v hrnci dostatočný počet porcii, prebehne simulácia servírovania plného hrnca kuchárom (_servirovanie_plny_hrniec()_),
+Ak je v hrnci dostatočný počet porcii, prebehne nastavenie indikátora procesu varenia (_varenie_dokoncene = True_), 
+následne simulácia servírovania plného hrnca kuchárom (_servirovanie_plny_hrniec()_),
 vyčistenie (reset čakania) signalizácie prázdneho hrnca (_prazdny_hrniec.clear()_), signalizácia pomocou semafóru divochom, 
 že je hrniec naplnený (_plny_hrniec.signal()_) a nakoniec odomknutie mutex-u (_kuchar_mutex.unlock()_).
 
-            else:
-                servirovanie_plny_hrniec(proces_id)
-                usadlost.prazdny_hrniec.clear()
-                usadlost.plny_hrniec.signal()
-                usadlost.kuchar_mutex.unlock()
+                else:
+                    usadlost.varenie_dokoncene = True
+                    servirovanie_plny_hrniec(proces_id)
+                    usadlost.prazdny_hrniec.clear()
+                    usadlost.plny_hrniec.signal()
+                    usadlost.kuchar_mutex.unlock()
 
 ### Implementácia - Bariéra (SimpleBarrier)
 
-Trieda implementujúca funkcionalitu synchronizačného mechanizmu bariéra pomocou synchronizačného mechanizmu Event
-(_Event_ - fei.ppds). Podľa vzoru z https://www.youtube.com/watch?v=3KJv9hFTx6k&t=876s.
+Trieda implementujúca funkcionalitu synchronizačného mechanizmu bariéra pomocou synchronizačného mechanizmu Semaphore
+(_Semaphore_ - fei.ppds). Podľa vzoru z https://www.youtube.com/watch?v=3KJv9hFTx6k&t=876s.
 
     class SimpleBarrier:
         def __init__(self, n):
             self.n = n
             self.c = 0
             self.mutex = Mutex()
-            self.event = Event()
+            self.semaphore = Semaphore(0)
     
         def wait(self):
             self.mutex.lock()
-            if self.c == 0:
-                self.event.clear()
             self.c += 1
             if self.c == self.n:
-                self.event.signal()
+                self.c = 0
+                self.semaphore.signal(self.n)
             self.mutex.unlock()
-            self.event.wait()
+            self.semaphore.wait()
+
+        def wait_vypis(self, vlakno_vypis, vlakna_stretnutie_vypis):
+            self.mutex.lock()
+            self.c += 1
+            print(vlakno_vypis)
+            if self.c == self.n:
+                self.c = 0
+                print(vlakna_stretnutie_vypis)
+                self.semaphore.signal(self.n)
+            self.mutex.unlock()
+            self.semaphore.wait()
 
 ### Charakteristika fungovania
 
@@ -177,23 +205,31 @@ následne spoločne čakajú na ďalší signál o vyprázdnení hrnca.
 
 Uvažujme výpis z uvedeného príkladu v sekcii **Charakteristika fungovania**:
 
-    Divoch [id: 0] našiel prázdny hrniec a upovedumuje kuchárov.
+    Divoch [id: 2] čaká na stretnutie pred hodovaním.
+    Divoch [id: 0] čaká na stretnutie pred hodovaním.
+    Divoch [id: 1] čaká na stretnutie pred hodovaním.
+    Divosi sa stretli, môžu začať hodovať.
+    Divoch [id: 1] našiel prázdny hrniec a upovedumuje kuchárov.
+    Kuchár [id: 3] varí.
+    Kuchár [id: 2] varí.
     Kuchár [id: 0] varí.
     Kuchár [id: 1] varí.
-    Kuchár [id: 2] varí.
-    Kuchár [id: 3] varí.
     Kuchár [id: 4] varí.
-    Kuchár [id: 1] upovedomuje divochov o naplnení hrnca.
+    Kuchár [id: 3] upovedomuje divochov o naplnení hrnca.
+    Divoch [id: 1] si naberá porciu.
+    Divoch [id: 1] hoduje.
     Divoch [id: 0] si naberá porciu.
     Divoch [id: 0] hoduje.
-    Divoch [id: 1] si naberá porciu.
-    Divoch [id: 1] hoduje.
+    Divoch [id: 2] si naberá porciu.
+    Divoch [id: 2] hoduje.
+    Divoch [id: 0] čaká na stretnutie pred hodovaním.
+    Divoch [id: 1] čaká na stretnutie pred hodovaním.
+    Divoch [id: 2] čaká na stretnutie pred hodovaním.
+    Divosi sa stretli, môžu začať hodovať.
     Divoch [id: 2] si naberá porciu.
     Divoch [id: 2] hoduje.
     Divoch [id: 1] si naberá porciu.
     Divoch [id: 1] hoduje.
-    Divoch [id: 2] si naberá porciu.
-    Divoch [id: 2] hoduje.
     Divoch [id: 0] našiel prázdny hrniec a upovedumuje kuchárov.
 
     ...
