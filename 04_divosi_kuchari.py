@@ -26,6 +26,7 @@ class Usadlost:
         divoch_mutex: Mutex na manipuláciu divochom s premennou porcie.
         kuchar_mutex: Mutex na manipuláciu kuchárom s premennou porcie.
         porcie: Premenná reprezentujúca počet porcií v hrnci.
+        varenie_dokoncene: Premenná reprezentujúca stav varenia.
         plny_hrniec: Signalizačný Semafór plného hrnca.
         prazdny_hrniec: Signalizačný Semafór prázdneho hrnca.
         divoch_bariera_1: Bariéra (1.) synchronizujúca spoločné hodovanie divochov.
@@ -40,6 +41,7 @@ class Usadlost:
         self.divoch_mutex = Mutex()
         self.kuchar_mutex = Mutex()
         self.porcie = 0
+        self.varenie_dokoncene = False
         self.plny_hrniec = Semaphore(0)
         self.prazdny_hrniec = Event()
         self.divoch_bariera_1 = SimpleBarrier(DIVOCH_POCET)
@@ -114,11 +116,17 @@ def divoch_proces(proces_id: int, usadlost: Usadlost):
 
     while True:
         usadlost.divoch_bariera_1.wait()
-        usadlost.divoch_bariera_2.wait()
+        usadlost.divoch_bariera_2.wait_vypis(
+            f"Divoch [id: {proces_id}] čaká na stretnutie pred hodovaním.",
+            f"Divosi sa stretli, môžu začať hodovať."
+        )
         usadlost.divoch_mutex.lock()
         if usadlost.porcie == 0:
             # prázdny hrniec
             najdenie_prazdny_hrniec(proces_id)
+            usadlost.kuchar_mutex.lock()
+            usadlost.varenie_dokoncene = False
+            usadlost.kuchar_mutex.unlock()
             usadlost.prazdny_hrniec.signal()
             usadlost.plny_hrniec.wait()
         # hodovanie
@@ -140,16 +148,20 @@ def kuchar_proces(proces_id: int, usadlost: Usadlost):
     while True:
         usadlost.prazdny_hrniec.wait()
         usadlost.kuchar_mutex.lock()
-        if usadlost.porcie < PORCIA_POCET:
-            # varenie a nakladanie porcii do hrnca
-            usadlost.porcie += 1
-            usadlost.kuchar_mutex.unlock()
-            varenie(proces_id)
+        if not usadlost.varenie_dokoncene:
+            if usadlost.porcie < PORCIA_POCET:
+                # varenie a nakladanie porcii do hrnca
+                usadlost.porcie += 1
+                usadlost.kuchar_mutex.unlock()
+                varenie(proces_id)
+            else:
+                # servírovanie plného hrnca
+                usadlost.varenie_dokoncene = True
+                servirovanie_plny_hrniec(proces_id)
+                usadlost.prazdny_hrniec.clear()
+                usadlost.plny_hrniec.signal()
+                usadlost.kuchar_mutex.unlock()
         else:
-            # servírovanie plného hrnca
-            servirovanie_plny_hrniec(proces_id)
-            usadlost.prazdny_hrniec.clear()
-            usadlost.plny_hrniec.signal()
             usadlost.kuchar_mutex.unlock()
 
 
