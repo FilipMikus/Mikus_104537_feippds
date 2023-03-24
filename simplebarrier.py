@@ -54,6 +54,10 @@ class SimpleBarrier:
     def wait_vypis(self, vlakno_vypis, vlakna_stretnutie_vypis):
         """
         Metóda implementujúca čakanie volajúceho procesu pri bariére.
+
+        Argumenty:
+            vlakno_vypis: Výpis pri príchode vlákna k bariére.
+            vlakna_stretnutie_vypis: Výpis pri stretnutí všetkých vlákien pri bariére.
         """
 
         self.mutex.lock()
