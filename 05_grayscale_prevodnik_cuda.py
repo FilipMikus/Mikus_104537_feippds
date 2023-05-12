@@ -69,9 +69,9 @@ def image_rgb_to_grayscale_gpu(input_image: np.ndarray):
     output_image = np.empty((input_image.shape[0], input_image.shape[1], input_image.shape[2]), dtype=np.float32)
     d_input_image = cuda.to_device(input_image)
     d_output_image = cuda.to_device(output_image)
-    threads_per_block = (16, 16)
-    blocks_per_grid_x = input_image.shape[0] // threads_per_block[0]
-    blocks_per_grid_y = input_image.shape[1] // threads_per_block[1]
+    threads_per_block = (32, 32)
+    blocks_per_grid_x = (input_image.shape[0] + threads_per_block[0] - 1) // threads_per_block[0]
+    blocks_per_grid_y = (input_image.shape[1] + threads_per_block[1] - 1) // threads_per_block[1]
     blocks_per_grid = (blocks_per_grid_x, blocks_per_grid_y)
     image_rgb_to_grayscale_cuda_jit[blocks_per_grid, threads_per_block](d_input_image, d_output_image)
     return d_output_image.copy_to_host()
@@ -112,7 +112,7 @@ def images_rgb_to_grayscale_gpu(input_images_directory: str, output_images_direc
 
 
 if __name__ == '__main__':
-    switch = 'cpu'
+    switch = 'gpu'
     if switch == 'cpu':
         cpu_time = images_rgb_to_grayscale_cpu(INPUT_IMAGES_DIR, OUTPUT_IMAGES_DIR)
         print(f"Čas výpočtu na CPU: {cpu_time}")
