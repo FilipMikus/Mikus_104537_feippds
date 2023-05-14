@@ -149,7 +149,7 @@ double *pagerank_parallel(int process_id, int processes_count, int **graph_matri
                 }
             }
             partition_ranks[i - partition_vertex_index] =
-                    (1.0 - DUMP_FACTOR) + DUMP_FACTOR * tmp_ranks[i - partition_vertex_index];
+                    (1.0 - DUMP_FACTOR) / vertices_count + DUMP_FACTOR * tmp_ranks[i - partition_vertex_index];
         }
 
         MPI_Allgatherv(partition_ranks, partition_vertices_count, MPI_DOUBLE,
